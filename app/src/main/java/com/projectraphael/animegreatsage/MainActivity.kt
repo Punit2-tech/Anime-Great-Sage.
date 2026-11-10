@@ -252,10 +252,12 @@ private fun MainShell(
                     Text("This v1.1 starter gives you the app foundation. Connect real AI and verified content services during development.",
                         color = Pale.copy(alpha = .7f))
                     Spacer(Modifier.height(18.dp))
-                    FeatureCard("Talk with Raphael", "AI conversation interface — service connection pending", Icons.Default.AutoAwesome)
-                    FeatureCard("Great Sage Archive", "Anime, manga, manhwa, races, magic, skills and lore — knowledge backend pending", Icons.Default.Book)
-                    FeatureCard("Discover anime", "Search by title, category, theme or story — catalog integration pending", Icons.Default.Search)
-                    FeatureCard("Voice & avatar", "Voice changer and avatar customization — implementation pending", Icons.Default.AutoAwesome)
+                    FeatureCard("Talk with Raphael", "Hybrid AI foundation added; inference provider integration pending", Icons.Default.AutoAwesome)
+                    FeatureCard("Master Knowledge Repository", "Anime, games, study, cultures, cooking, energy systems and general knowledge", Icons.Default.Book)
+                    FeatureCard("Anime Timeline Navigator", "Release order, story chronology and spoiler-aware recommended watch order", Icons.Default.Book)
+                    FeatureCard("Game Journey Navigator", "Game release order, story order, campaigns, DLC and completion guides", Icons.Default.Book)
+                    FeatureCard("Progress Tracker", "Local data model foundation for anime episodes and game missions", Icons.Default.Download)
+                    FeatureCard("Voice & avatar", "Voice conversion provider interface; live call integration pending", Icons.Default.AutoAwesome)
                 }
                 "Explore" -> {
                     Text("Explore Great Sage", color = Pale, fontSize = 25.sp, fontWeight = FontWeight.Bold)
@@ -263,8 +265,22 @@ private fun MainShell(
                     Text("Search and discovery screens are planned here. The live catalog and source integrations are not connected yet.",
                         color = Pale.copy(alpha = .7f))
                     Spacer(Modifier.height(16.dp))
-                    listOf("Anime", "Manga & Manhwa", "Races & Species", "Magic, Skills & Powers", "Timelines & Watch Orders").forEach {
-                        FeatureCard(it, "Knowledge module planned for a later implementation stage", Icons.Default.Book)
+                    listOf(
+                        "Anime & Action Anime",
+                        "Manga, Manhwa, Manhua & Light Novels",
+                        "Anime Timeline Navigator",
+                        "Game Journey Navigator",
+                        "Anime & Game Progress Tracker",
+                        "Races & Species",
+                        "Magic, Skills & Powers",
+                        "Chakra, Ki, Aura & Spiritual Energy",
+                        "Cooking & Anime Cuisine",
+                        "Study Knowledge",
+                        "World Cultures",
+                        "General Knowledge",
+                        "Upcoming Releases"
+                    ).forEach {
+                        FeatureCard(it, "Knowledge schema and navigation foundation; verified content integration pending", Icons.Default.Book)
                     }
                 }
                 else -> {
