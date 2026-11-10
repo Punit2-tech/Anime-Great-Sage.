@@ -1,59 +1,66 @@
-# Anime Great Sage v1.1 — Android starter project
+# Anime Great Sage v1.2 — Raphael Hybrid AI foundation
 
-Project/development name: Project Raphael  
-App display name: Anime Great Sage  
-Assistant identity: Raphael, the Great Sage
+**Project:** Project Raphael  
+**App:** Anime Great Sage  
+**Assistant:** Raphael, the Great Sage  
+**Tagline:** Your Intelligence. Your World. Your Great Sage.
 
-## What is implemented in this starter
-- Native Android app shell using Kotlin and Jetpack Compose.
-- First-run guest profile with optional name and nickname.
-- Beginner onboarding tour with skip and replay.
-- Home, Explore, and Profile navigation.
-- Blue cosmic-orb visual made from native Compose gradients (not an imported AI image).
-- Local guest display-name and tutorial-state storage using DataStore.
-- No analytics, advertising SDK, account sign-in, network permission, or cloud upload is included.
+This source tree is based on the supplied v1.1 Android project. The v1.1 archive is not modified.
 
-## What is NOT implemented yet
-This is a source-code foundation, not the complete promised product and not a built APK. The following require separate implementation, service selection, testing, and often licensed data/API access:
-- Live AI chat and model backend.
-- Complete, maintained anime/manga/manhwa catalog and source attribution.
-- Search, title matching, recommendations, timelines and watch/read orders.
-- Franchise-specific race, magic, skill and power encyclopedias.
-- Real-time voice conversations and voice changing (Android/device restrictions apply).
-- Wallpaper picker and system wallpaper confirmation flow.
-- User account connection/sync, moderation, backup and account deletion.
-- Official-media retrieval, authorized embeds, fan-art opt-in and copyright checks.
-- Production security review, accessibility, localization, crash testing and release signing.
+## What is included in this v1.2 source foundation
 
-The interface labels these features as pending rather than pretending they work.
+- Preserved Kotlin + Jetpack Compose app shell, guest profile and beginner tour.
+- App version metadata updated to 1.2.0.
+- Device capability inspection for Android version, ARM64 ABI, RAM and free storage.
+- AI provider interfaces and consent-aware provider routing.
+- Structured knowledge schemas for anime, manga, games, study, culture, cooking, energy traditions and general knowledge.
+- Timeline data structures for original release, in-universe chronology and recommended first-time order.
+- Game journey data structures for release/story sequence, campaigns and expansions.
+- Anime/game progress record model.
+- Voice-conversion provider interface and voice profile model.
+- Default-off consent policy model.
+- GitHub Actions workflow to build a debug APK.
 
-## Build in Android Studio
-1. Install Android Studio with a JDK 17-compatible setup and Android SDK Platform 35.
-2. Open this folder (`AnimeGreatSage-Android-v1.1`) in Android Studio.
-3. Allow Gradle sync to finish.
-4. Use **Build > Build Bundle(s) / APK(s) > Build APK(s)**.
-5. For a distributable release, configure your own secure signing key under **Build > Generate Signed Bundle / APK**.
-6. Test the signed APK on multiple real Android devices before sharing it.
+## Important implementation status
 
-The generated debug APK is normally at:
-`app/build/outputs/apk/debug/app-debug.apk`
+This is a **source-code foundation**, not a finished AI assistant.
 
-A signed release APK is normally at:
-`app/build/outputs/apk/release/app-release.apk`
+Not yet implemented or verified:
+- No local GGUF model or llama.cpp/llama.kt inference engine is bundled.
+- No online AI backend is configured; no conversation data is sent online.
+- No working voice conversion, voice cloning, microphone capture or call-audio routing.
+- No populated/exhaustive anime, game, recipe, study or energy database.
+- No live web catalog, release tracker or source-verification service.
+- Progress data models exist, but progress persistence and tracker UI are not complete.
+- No wallpaper picker or wallpaper-setting implementation is included in this increment.
+
+The app must not label these unfinished modules as working features. A compatible-device check is only a preliminary screening and does not guarantee acceptable model performance.
 
 ## Compatibility
-- `minSdk = 23` is a provisional broad-compatibility starting point (Android 6.0+), not a guarantee that every planned feature will work on every device.
-- `targetSdk = 35`, `compileSdk = 35`, Java 17.
-- The final minimum Android version must be validated against all selected libraries and planned features before release.
 
-## Important release/security notes
-- Keep the Android signing key private and backed up securely. Do not send it in WhatsApp or include it in the source ZIP.
-- Never distribute an unsigned or unverified production build.
-- Before collecting any personal data or adding cloud AI services, publish a clear privacy notice, minimize data collection, secure transport/storage, and obtain consent for optional sharing.
-- For WhatsApp distribution, share the signed APK only after testing it. Some messaging apps impose file-size/type restrictions; an official download link is a useful alternative.
-- The website should retain only the three requested sections: Home, Description, Download.
+- Android minimum: API 23 (Android 6.0), retained from v1.1.
+- Target/compile SDK: 35.
+- Java/JVM target: 17.
+- Planned local inference requires a separate runtime integration and device testing. The preliminary capability checker looks for Android 10+, ARM64, sufficient available RAM and free storage.
 
-## Project identity
-Package/application ID: `com.projectraphael.animegreatsage`  
-Version name: `1.1`  
-Version code: `11`
+## Privacy and permissions
+
+- Guest profile remains local to the device through DataStore.
+- No `INTERNET` or `RECORD_AUDIO` permission is added in this foundation.
+- No automatic browsing, background microphone use, unsolicited notifications, payments or banking features.
+- Online AI, account connection and microphone use must remain disabled until implemented with clear, explicit user consent.
+
+## Build
+
+The included GitHub Actions workflow uses JDK 17 and Gradle 8.11.1:
+
+```bash
+gradle :app:assembleDebug --no-daemon
+```
+
+Output: `app/build/outputs/apk/debug/app-debug.apk`
+
+## Versioning
+
+- v1.1: preserved original project supplied by the user.
+- v1.2.0: hybrid-AI architecture and feature-model foundation.
