@@ -1,3 +1,4 @@
+
 package com.projectraphael.animegreatsage
 
 import android.os.Bundle
@@ -72,36 +73,56 @@ private fun GreatSageApp() {
     val savedName = prefs?.get(NAME_KEY).orEmpty()
     val savedNick = prefs?.get(NICK_KEY).orEmpty()
     val tourSeen = prefs?.get(TOUR_KEY) == "yes"
+
     var page by remember { mutableStateOf("Home") }
     var showTour by remember { mutableStateOf(false) }
 
     Box(Modifier.fillMaxSize().background(Navy)) {
         when {
             prefs == null -> LoadingScreen()
-            savedName.isBlank() -> GuestSetupScreen { name, nick ->
+
+            savedName.isBlank() -> GuestSetupScreen { name ->
                 scope.launch {
                     context.profileStore.edit {
                         it[NAME_KEY] = name
-                        it[NICK_KEY] = nick
                     }
                     showTour = true
                 }
             }
+
             showTour || !tourSeen -> WelcomeTour(
                 onFinish = {
-                    scope.launch { context.profileStore.edit { it[TOUR_KEY] = "yes" } }
+                    scope.launch {
+                        context.profileStore.edit {
+                            it[TOUR_KEY] = "yes"
+                        }
+                    }
                     showTour = false
                 },
                 onSkip = {
-                    scope.launch { context.profileStore.edit { it[TOUR_KEY] = "yes" } }
+                    scope.launch {
+                        context.profileStore.edit {
+                            it[TOUR_KEY] = "yes"
+                        }
+                    }
                     showTour = false
                 }
             )
+
             else -> MainShell(
                 displayName = savedNick.ifBlank { savedName },
+                savedName = savedName,
+                savedNickname = savedNick,
                 page = page,
                 onPage = { page = it },
-                onReplayTour = { showTour = true }
+                onReplayTour = { showTour = true },
+                onSaveNickname = { nickname ->
+                    scope.launch {
+                        context.profileStore.edit {
+                            it[NICK_KEY] = nickname
+                        }
+                    }
+                }
             )
         }
     }
@@ -109,111 +130,228 @@ private fun GreatSageApp() {
 
 @Composable
 private fun LoadingScreen() {
-    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+    Box(
+        Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
         CircularProgressIndicator(color = Cyan)
     }
 }
 
 @Composable
-private fun Orb(modifier: Modifier = Modifier, size: androidx.compose.ui.unit.Dp = 112.dp) {
+private fun Orb(
+    modifier: Modifier = Modifier,
+    size: androidx.compose.ui.unit.Dp = 112.dp
+) {
     Box(
-        modifier.size(size).clip(CircleShape).background(
-            Brush.radialGradient(
-                colors = listOf(Color(0xFFE3FCFF), Color(0xFF58D8FF), Color(0xFF2368C9), Color(0x00112655))
-            )
-        ),
+        modifier.size(size)
+            .clip(CircleShape)
+            .background(
+                Brush.radialGradient(
+                    colors = listOf(
+                        Color(0xFFE3FCFF),
+                        Color(0xFF58D8FF),
+                        Color(0xFF2368C9),
+                        Color(0x00112655)
+                    )
+                )
+            ),
         contentAlignment = Alignment.Center
     ) {
-        Box(Modifier.size(size * .68f).clip(CircleShape).background(
-            Brush.radialGradient(listOf(Color(0xAAFFFFFF), Color(0x6656DFFF), Color.Transparent))
-        ))
-        Box(Modifier.size(size * .34f).clip(CircleShape).background(Color(0xAAE9FFFF)))
+        Box(
+            Modifier.size(size * .68f)
+                .clip(CircleShape)
+                .background(
+                    Brush.radialGradient(
+                        listOf(
+                            Color(0xAAFFFFFF),
+                            Color(0x6656DFFF),
+                            Color.Transparent
+                        )
+                    )
+                )
+        )
+        Box(
+            Modifier.size(size * .34f)
+                .clip(CircleShape)
+                .background(Color(0xAAE9FFFF))
+        )
     }
 }
 
 @Composable
-private fun GuestSetupScreen(onContinue: (String, String) -> Unit) {
+private fun GuestSetupScreen(onContinue: (String) -> Unit) {
     var name by remember { mutableStateOf("") }
-    var nickname by remember { mutableStateOf("") }
+
     Column(
-        Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(24.dp),
+        Modifier.fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
         Orb()
+
         Spacer(Modifier.height(20.dp))
-        Text("Welcome to Anime Great Sage", fontSize = 25.sp, fontWeight = FontWeight.Bold, color = Pale)
+
+        Text(
+            "Welcome to Anime Great Sage",
+            fontSize = 25.sp,
+            fontWeight = FontWeight.Bold,
+            color = Pale
+        )
+
         Spacer(Modifier.height(8.dp))
-        Text("Meet Raphael, your Great Sage companion.", color = Pale.copy(alpha = .75f))
+
+        Text(
+            "Meet Raphael, your Great Sage companion.",
+            color = Pale.copy(alpha = .75f)
+        )
+
         Spacer(Modifier.height(26.dp))
+
         OutlinedTextField(
-            value = name, onValueChange = { name = it },
+            value = name,
+            onValueChange = { name = it },
             label = { Text("Your name (optional)") },
-            keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words),
-            singleLine = true, modifier = Modifier.fillMaxWidth()
-        )
-        Spacer(Modifier.height(12.dp))
-        OutlinedTextField(
-            value = nickname, onValueChange = { nickname = it },
-            label = { Text("Nickname (optional)") },
-            keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words),
-            singleLine = true, modifier = Modifier.fillMaxWidth()
-        )
-        Spacer(Modifier.height(12.dp))
-        Text("Guest access does not require an account. Avoid entering sensitive personal information.",
-            color = Pale.copy(alpha = .65f), fontSize = 12.sp)
-        Spacer(Modifier.height(22.dp))
-        Button(
-            onClick = { onContinue(name.trim().ifBlank { "Guest" }, nickname.trim()) },
+            keyboardOptions = KeyboardOptions(
+                capitalization = KeyboardCapitalization.Words
+            ),
+            singleLine = true,
             modifier = Modifier.fillMaxWidth()
-        ) { Text("Continue as guest") }
+        )
+
+        Spacer(Modifier.height(12.dp))
+
+        Text(
+            "Guest access does not require an account. Avoid entering sensitive personal information.",
+            color = Pale.copy(alpha = .65f),
+            fontSize = 12.sp
+        )
+
+        Spacer(Modifier.height(22.dp))
+
+        Button(
+            onClick = {
+                onContinue(name.trim().ifBlank { "Guest" })
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Continue as guest")
+        }
     }
 }
 
 @Composable
-private fun WelcomeTour(onFinish: () -> Unit, onSkip: () -> Unit) {
+private fun WelcomeTour(
+    onFinish: () -> Unit,
+    onSkip: () -> Unit
+) {
     val pages = listOf(
-        "Meet Raphael" to "Raphael is your conversational AI companion. Ask questions naturally and explore at your own pace.",
-        "Explore Great Sage" to "Discover anime, manga and manhwa information, watch orders, characters, races, magic, skills and story lore.",
-        "Find your next story" to "Ask for recommendations by title, genre, theme or a story you describe. Ask follow-up questions for closer matches.",
-        "Your privacy and controls" to "Guest access is available. Account connections should remain optional. Review permissions before sharing any information."
+        "Meet Raphael" to
+            "Raphael is your conversational AI companion. Ask questions naturally and explore at your own pace.",
+
+        "Explore Great Sage" to
+            "Discover anime, manga and manhwa information, watch orders, characters, races, magic, skills and story lore.",
+
+        "Find your next story" to
+            "Ask for recommendations by title, genre, theme or a story you describe. Ask follow-up questions for closer matches.",
+
+        "Your privacy and controls" to
+            "Guest access is available. Account connections should remain optional. Review permissions before sharing any information."
     )
+
     var index by remember { mutableIntStateOf(0) }
+
     Column(
-        Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(24.dp),
+        Modifier.fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
         Orb(size = 104.dp)
+
         Spacer(Modifier.height(24.dp))
-        Text("A quick beginner tour", color = Cyan, fontWeight = FontWeight.SemiBold)
+
+        Text(
+            "A quick beginner tour",
+            color = Cyan,
+            fontWeight = FontWeight.SemiBold
+        )
+
         Spacer(Modifier.height(14.dp))
-        Text(pages[index].first, color = Pale, fontSize = 25.sp, fontWeight = FontWeight.Bold)
+
+        Text(
+            pages[index].first,
+            color = Pale,
+            fontSize = 25.sp,
+            fontWeight = FontWeight.Bold
+        )
+
         Spacer(Modifier.height(12.dp))
-        Text(pages[index].second, color = Pale.copy(alpha = .78f), fontSize = 16.sp)
+
+        Text(
+            pages[index].second,
+            color = Pale.copy(alpha = .78f),
+            fontSize = 16.sp
+        )
+
         Spacer(Modifier.height(26.dp))
+
         Row(horizontalArrangement = Arrangement.spacedBy(7.dp)) {
             pages.indices.forEach { i ->
-                Box(Modifier.width(if (i == index) 26.dp else 8.dp).height(8.dp)
-                    .clip(CircleShape).background(if (i == index) Cyan else Pale.copy(alpha = .25f)))
+                Box(
+                    Modifier.width(if (i == index) 26.dp else 8.dp)
+                        .height(8.dp)
+                        .clip(CircleShape)
+                        .background(
+                            if (i == index) Cyan
+                            else Pale.copy(alpha = .25f)
+                        )
+                )
             }
         }
+
         Spacer(Modifier.height(26.dp))
-        Button(onClick = { if (index == pages.lastIndex) onFinish() else index++ },
-            modifier = Modifier.fillMaxWidth()) {
-            Text(if (index == pages.lastIndex) "Finish tour" else "Next")
+
+        Button(
+            onClick = {
+                if (index == pages.lastIndex) onFinish()
+                else index++
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(
+                if (index == pages.lastIndex) "Finish tour"
+                else "Next"
+            )
         }
-        TextButton(onClick = onSkip) { Text("Skip tutorial") }
+
+        TextButton(onClick = onSkip) {
+            Text("Skip tutorial")
+        }
     }
 }
 
 @Composable
 private fun MainShell(
     displayName: String,
+    savedName: String,
+    savedNickname: String,
     page: String,
     onPage: (String) -> Unit,
-    onReplayTour: () -> Unit
+    onReplayTour: () -> Unit,
+    onSaveNickname: (String) -> Unit
 ) {
+    var nickname by remember(savedNickname) {
+        mutableStateOf(savedNickname)
+    }
+
+    var nicknameSaved by remember(savedNickname) {
+        mutableStateOf(false)
+    }
+
     Scaffold(
         containerColor = Navy,
         bottomBar = {
@@ -223,11 +361,14 @@ private fun MainShell(
                         selected = page == item,
                         onClick = { onPage(item) },
                         icon = {
-                            Icon(when (item) {
-                                "Home" -> Icons.Default.Home
-                                "Explore" -> Icons.Default.Search
-                                else -> Icons.Default.Person
-                            }, contentDescription = item)
+                            Icon(
+                                when (item) {
+                                    "Home" -> Icons.Default.Home
+                                    "Explore" -> Icons.Default.Search
+                                    else -> Icons.Default.Person
+                                },
+                                contentDescription = item
+                            )
                         },
                         label = { Text(item) }
                     )
@@ -235,36 +376,105 @@ private fun MainShell(
             }
         }
     ) { padding ->
+
         Column(
-            Modifier.fillMaxSize().padding(padding).verticalScroll(rememberScrollState()).padding(20.dp)
+            Modifier.fillMaxSize()
+                .padding(padding)
+                .verticalScroll(rememberScrollState())
+                .padding(20.dp)
         ) {
             when (page) {
                 "Home" -> {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Column(Modifier.weight(1f)) {
-                            Text("ANIME GREAT SAGE", color = Cyan, fontWeight = FontWeight.Bold, fontSize = 13.sp)
-                            Text("Hello, $displayName", color = Pale, fontSize = 25.sp, fontWeight = FontWeight.Bold)
+                            Text(
+                                "ANIME GREAT SAGE",
+                                color = Cyan,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 13.sp
+                            )
+
+                            Text(
+                                "Hello, $displayName",
+                                color = Pale,
+                                fontSize = 25.sp,
+                                fontWeight = FontWeight.Bold
+                            )
                         }
+
                         Orb(size = 64.dp)
                     }
+
                     Spacer(Modifier.height(24.dp))
-                    Text("Your Great Sage awaits.", color = Pale, fontSize = 22.sp, fontWeight = FontWeight.SemiBold)
-                    Text("This v1.1 starter gives you the app foundation. Connect real AI and verified content services during development.",
-                        color = Pale.copy(alpha = .7f))
+
+                    Text(
+                        "Your Great Sage awaits.",
+                        color = Pale,
+                        fontSize = 22.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
+
+                    Text(
+                        "This v1.1 starter gives you the app foundation. Connect real AI and verified content services during development.",
+                        color = Pale.copy(alpha = .7f)
+                    )
+
                     Spacer(Modifier.height(18.dp))
-                    FeatureCard("Talk with Raphael", "Hybrid AI foundation added; inference provider integration pending", Icons.Default.AutoAwesome)
-                    FeatureCard("Master Knowledge Repository", "Anime, games, study, cultures, cooking, energy systems and general knowledge", Icons.Default.Book)
-                    FeatureCard("Anime Timeline Navigator", "Release order, story chronology and spoiler-aware recommended watch order", Icons.Default.Book)
-                    FeatureCard("Game Journey Navigator", "Game release order, story order, campaigns, DLC and completion guides", Icons.Default.Book)
-                    FeatureCard("Progress Tracker", "Local data model foundation for anime episodes and game missions", Icons.Default.Download)
-                    FeatureCard("Voice & avatar", "Voice conversion provider interface; live call integration pending", Icons.Default.AutoAwesome)
+
+                    FeatureCard(
+                        "Talk with Raphael",
+                        "Hybrid AI foundation added; inference provider integration pending",
+                        Icons.Default.AutoAwesome
+                    )
+
+                    FeatureCard(
+                        "Master Knowledge Repository",
+                        "Anime, games, study, cultures, cooking, energy systems and general knowledge",
+                        Icons.Default.Book
+                    )
+
+                    FeatureCard(
+                        "Anime Timeline Navigator",
+                        "Release order, story chronology and spoiler-aware recommended watch order",
+                        Icons.Default.Book
+                    )
+
+                    FeatureCard(
+                        "Game Journey Navigator",
+                        "Game release order, story order, campaigns, DLC and completion guides",
+                        Icons.Default.Book
+                    )
+
+                    FeatureCard(
+                        "Progress Tracker",
+                        "Local data model foundation for anime episodes and game missions",
+                        Icons.Default.Download
+                    )
+
+                    FeatureCard(
+                        "Voice & avatar",
+                        "Voice conversion provider interface; live call integration pending",
+                        Icons.Default.AutoAwesome
+                    )
                 }
+
                 "Explore" -> {
-                    Text("Explore Great Sage", color = Pale, fontSize = 25.sp, fontWeight = FontWeight.Bold)
+                    Text(
+                        "Explore Great Sage",
+                        color = Pale,
+                        fontSize = 25.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+
                     Spacer(Modifier.height(8.dp))
-                    Text("Search and discovery screens are planned here. The live catalog and source integrations are not connected yet.",
-                        color = Pale.copy(alpha = .7f))
+
+                    Text(
+                        "Search and discovery screens are planned here. The live catalog and source integrations are not connected yet.",
+                        color = Pale.copy(alpha = .7f)
+                    )
+
                     Spacer(Modifier.height(16.dp))
+
                     listOf(
                         "Anime & Action Anime",
                         "Manga, Manhwa, Manhua & Light Novels",
@@ -280,37 +490,110 @@ private fun MainShell(
                         "General Knowledge",
                         "Upcoming Releases"
                     ).forEach {
-                        FeatureCard(it, "Knowledge schema and navigation foundation; verified content integration pending", Icons.Default.Book)
+                        FeatureCard(
+                            it,
+                            "Knowledge schema and navigation foundation; verified content integration pending",
+                            Icons.Default.Book
+                        )
                     }
                 }
-                else -> {
-                    Text("Your guest profile", color = Pale, fontSize = 25.sp, fontWeight = FontWeight.Bold)
-                    Text("Signed in as a local guest: $displayName", color = Pale.copy(alpha = .75f))
-                    Spacer(Modifier.height(16.dp))
-                    OutlinedButton(onClick = onReplayTour) { Text("Replay beginner tour") }
-                    Text("This starter stores the guest display name and tutorial status on this device. It does not create a cloud account.",
-                        color = Pale.copy(alpha = .65f), fontSize = 12.sp)
-                }
-            }
-        }
-    }
-}
 
-@Composable
-private fun FeatureCard(title: String, detail: String, icon: androidx.compose.ui.graphics.vector.ImageVector) {
-    Card(
-        modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp),
-        colors = CardDefaults.cardColors(containerColor = Panel),
-        shape = RoundedCornerShape(18.dp)
-    ) {
-        Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-            Icon(icon, contentDescription = null, tint = Cyan, modifier = Modifier.size(28.dp))
-            Spacer(Modifier.width(14.dp))
-            Column {
-                Text(title, color = Pale, fontWeight = FontWeight.SemiBold)
-                Spacer(Modifier.height(3.dp))
-                Text(detail, color = Pale.copy(alpha = .65f), fontSize = 12.sp)
-            }
-        }
-    }
-}
+                else -> {
+                    Text(
+                        "Profile & Settings",
+                        color = Pale,
+                        fontSize = 25.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+
+                    Spacer(Modifier.height(8.dp))
+
+                    Text(
+                        "Your local guest profile and app preferences.",
+                        color = Pale.copy(alpha = .75f)
+                    )
+
+                    Spacer(Modifier.height(22.dp))
+
+                    Text(
+                        "Settings",
+                        color = Cyan,
+                        fontSize = 19.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
+
+                    Spacer(Modifier.height(12.dp))
+
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(containerColor = Panel),
+                        shape = RoundedCornerShape(18.dp)
+                    ) {
+                        Column(Modifier.padding(16.dp)) {
+                            Text(
+                                "General",
+                                color = Pale,
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+
+                            Spacer(Modifier.height(8.dp))
+
+                            Text(
+                                "Guest account name: $savedName",
+                                color = Pale.copy(alpha = .75f),
+                                fontSize = 13.sp
+                            )
+
+                            Spacer(Modifier.height(16.dp))
+
+                            Text(
+                                "Nickname (optional)",
+                                color = Pale,
+                                fontWeight = FontWeight.SemiBold
+                            )
+
+                            Spacer(Modifier.height(8.dp))
+
+                            OutlinedTextField(
+                                value = nickname,
+                                onValueChange = {
+                                    nickname = it
+                                    nicknameSaved = false
+                                },
+                                label = { Text("Your nickname") },
+                                singleLine = true,
+                                keyboardOptions = KeyboardOptions(
+                                    capitalization = KeyboardCapitalization.Words
+                                ),
+                                modifier = Modifier.fillMaxWidth()
+                            )
+
+                            Spacer(Modifier.height(12.dp))
+
+                            Button(
+                                onClick = {
+                                    onSaveNickname(nickname.trim())
+                                    nicknameSaved = true
+                                },
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text("Save nickname")
+                            }
+
+                            if (nicknameSaved) {
+                                Spacer(Modifier.height(8.dp))
+
+                                Text(
+                                    "Nickname saved on this device.",
+                                    color = Cyan,
+                                    fontSize = 13.sp
+                                )
+                            }
+                        }
+                    }
+
+                    Spacer(Modifier.height(18.dp))
+
+                    OutlinedButton(
+                   
