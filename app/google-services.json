@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "355371022156",
+    "project_id": "anime-great-sage",
+    "storage_bucket": "anime-great-sage.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:355371022156:android:8854656ce5d27453e381e9",
+        "android_client_info": {
+          "package_name": "com.projectraphael.animegreatsage"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDIceM6JDJiPkUL_5rh2KhwJhh0vTDuTbA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
