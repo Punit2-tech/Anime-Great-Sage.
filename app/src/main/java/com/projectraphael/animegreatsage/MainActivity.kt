@@ -35,6 +35,7 @@ import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.launch
 
 private val android.content.Context.profileStore by preferencesDataStore(name = "guest_profile")
+
 private val NAME_KEY = stringPreferencesKey("display_name")
 private val NICK_KEY = stringPreferencesKey("nickname")
 private val TOUR_KEY = stringPreferencesKey("tour_seen")
@@ -47,6 +48,7 @@ private val Pale = Color(0xFFEAF7FF)
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         setContent {
             MaterialTheme(
                 colorScheme = darkColorScheme(
@@ -69,7 +71,9 @@ class MainActivity : ComponentActivity() {
 private fun GreatSageApp() {
     val context = androidx.compose.ui.platform.LocalContext.current
     val scope = rememberCoroutineScope()
+
     val prefs by context.profileStore.data.collectAsState(initial = null)
+
     val savedName = prefs?.get(NAME_KEY).orEmpty()
     val savedNick = prefs?.get(NICK_KEY).orEmpty()
     val tourSeen = prefs?.get(TOUR_KEY) == "yes"
@@ -77,53 +81,70 @@ private fun GreatSageApp() {
     var page by remember { mutableStateOf("Home") }
     var showTour by remember { mutableStateOf(false) }
 
-    Box(Modifier.fillMaxSize().background(Navy)) {
+    Box(
+        Modifier
+            .fillMaxSize()
+            .background(Navy)
+    ) {
         when {
-            prefs == null -> LoadingScreen()
+            prefs == null -> {
+                LoadingScreen()
+            }
 
-            savedName.isBlank() -> GuestSetupScreen { name ->
-                scope.launch {
-                    context.profileStore.edit {
-                        it[NAME_KEY] = name
+            savedName.isBlank() -> {
+                GuestSetupScreen { name ->
+                    scope.launch {
+                        context.profileStore.edit {
+                            it[NAME_KEY] = name
+                        }
+                        showTour = true
                     }
-                    showTour = true
                 }
             }
 
-            showTour || !tourSeen -> WelcomeTour(
-                onFinish = {
-                    scope.launch {
-                        context.profileStore.edit {
-                            it[TOUR_KEY] = "yes"
+            showTour || !tourSeen -> {
+                WelcomeTour(
+                    onFinish = {
+                        scope.launch {
+                            context.profileStore.edit {
+                                it[TOUR_KEY] = "yes"
+                            }
                         }
-                    }
-                    showTour = false
-                },
-                onSkip = {
-                    scope.launch {
-                        context.profileStore.edit {
-                            it[TOUR_KEY] = "yes"
+                        showTour = false
+                    },
+                    onSkip = {
+                        scope.launch {
+                            context.profileStore.edit {
+                                it[TOUR_KEY] = "yes"
+                            }
                         }
+                        showTour = false
                     }
-                    showTour = false
-                }
-            )
+                )
+            }
 
-            else -> MainShell(
-                displayName = savedNick.ifBlank { savedName },
-                savedName = savedName,
-                savedNickname = savedNick,
-                page = page,
-                onPage = { page = it },
-                onReplayTour = { showTour = true },
-                onSaveNickname = { nickname ->
-                    scope.launch {
-                        context.profileStore.edit {
-                            it[NICK_KEY] = nickname
+            else -> {
+                MainShell(
+                    displayName = savedNick.ifBlank { savedName },
+                    savedName = savedName,
+                    savedNickname = savedNick,
+                    page = page,
+                    onPage = { page = it },
+                    onReplayTour = { showTour = true },
+                    onSaveNickname = { nickname, onResult ->
+                        scope.launch {
+                            try {
+                                context.profileStore.edit {
+                                    it[NICK_KEY] = nickname
+                                }
+                                onResult(true)
+                            } catch (_: Exception) {
+                                onResult(false)
+                            }
                         }
                     }
-                }
-            )
+                )
+            }
         }
     }
 }
@@ -144,7 +165,8 @@ private fun Orb(
     size: androidx.compose.ui.unit.Dp = 112.dp
 ) {
     Box(
-        modifier.size(size)
+        modifier
+            .size(size)
             .clip(CircleShape)
             .background(
                 Brush.radialGradient(
@@ -159,7 +181,8 @@ private fun Orb(
         contentAlignment = Alignment.Center
     ) {
         Box(
-            Modifier.size(size * .68f)
+            Modifier
+                .size(size * .68f)
                 .clip(CircleShape)
                 .background(
                     Brush.radialGradient(
@@ -171,8 +194,10 @@ private fun Orb(
                     )
                 )
         )
+
         Box(
-            Modifier.size(size * .34f)
+            Modifier
+                .size(size * .34f)
                 .clip(CircleShape)
                 .background(Color(0xAAE9FFFF))
         )
@@ -180,11 +205,14 @@ private fun Orb(
 }
 
 @Composable
-private fun GuestSetupScreen(onContinue: (String) -> Unit) {
+private fun GuestSetupScreen(
+    onContinue: (String) -> Unit
+) {
     var name by remember { mutableStateOf("") }
 
     Column(
-        Modifier.fillMaxSize()
+        Modifier
+            .fillMaxSize()
             .verticalScroll(rememberScrollState())
             .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -264,7 +292,8 @@ private fun WelcomeTour(
     var index by remember { mutableIntStateOf(0) }
 
     Column(
-        Modifier.fillMaxSize()
+        Modifier
+            .fillMaxSize()
             .verticalScroll(rememberScrollState())
             .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -302,7 +331,8 @@ private fun WelcomeTour(
         Row(horizontalArrangement = Arrangement.spacedBy(7.dp)) {
             pages.indices.forEach { i ->
                 Box(
-                    Modifier.width(if (i == index) 26.dp else 8.dp)
+                    Modifier
+                        .width(if (i == index) 26.dp else 8.dp)
                         .height(8.dp)
                         .clip(CircleShape)
                         .background(
@@ -317,8 +347,11 @@ private fun WelcomeTour(
 
         Button(
             onClick = {
-                if (index == pages.lastIndex) onFinish()
-                else index++
+                if (index == pages.lastIndex) {
+                    onFinish()
+                } else {
+                    index++
+                }
             },
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -342,13 +375,21 @@ private fun MainShell(
     page: String,
     onPage: (String) -> Unit,
     onReplayTour: () -> Unit,
-    onSaveNickname: (String) -> Unit
+    onSaveNickname: (String, (Boolean) -> Unit) -> Unit
 ) {
     var nickname by remember(savedNickname) {
         mutableStateOf(savedNickname)
     }
 
+    var nicknameSaving by remember {
+        mutableStateOf(false)
+    }
+
     var nicknameSaved by remember(savedNickname) {
+        mutableStateOf(false)
+    }
+
+    var nicknameError by remember {
         mutableStateOf(false)
     }
 
@@ -378,7 +419,8 @@ private fun MainShell(
     ) { padding ->
 
         Column(
-            Modifier.fillMaxSize()
+            Modifier
+                .fillMaxSize()
                 .padding(padding)
                 .verticalScroll(rememberScrollState())
                 .padding(20.dp)
@@ -560,6 +602,7 @@ private fun MainShell(
                                 onValueChange = {
                                     nickname = it
                                     nicknameSaved = false
+                                    nicknameError = false
                                 },
                                 label = { Text("Your nickname") },
                                 singleLine = true,
@@ -572,13 +615,28 @@ private fun MainShell(
                             Spacer(Modifier.height(12.dp))
 
                             Button(
+                                enabled = !nicknameSaving,
                                 onClick = {
-                                    onSaveNickname(nickname.trim())
-                                    nicknameSaved = true
+                                    nicknameSaving = true
+                                    nicknameSaved = false
+                                    nicknameError = false
+
+                                    onSaveNickname(nickname.trim()) { success ->
+                                        nicknameSaving = false
+                                        nicknameSaved = success
+                                        nicknameError = !success
+                                    }
                                 },
                                 modifier = Modifier.fillMaxWidth()
                             ) {
-                                Text("Save nickname")
+                                if (nicknameSaving) {
+                                    CircularProgressIndicator(
+                                        modifier = Modifier.size(18.dp),
+                                        strokeWidth = 2.dp
+                                    )
+                                } else {
+                                    Text("Save nickname")
+                                }
                             }
 
                             if (nicknameSaved) {
@@ -590,10 +648,82 @@ private fun MainShell(
                                     fontSize = 13.sp
                                 )
                             }
+
+                            if (nicknameError) {
+                                Spacer(Modifier.height(8.dp))
+
+                                Text(
+                                    "Could not save the nickname. Please try again.",
+                                    color = MaterialTheme.colorScheme.error,
+                                    fontSize = 13.sp
+                                )
+                            }
                         }
                     }
 
                     Spacer(Modifier.height(18.dp))
 
                     OutlinedButton(
-                   
+                        onClick = onReplayTour,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("Replay beginner tour")
+                    }
+
+                    Spacer(Modifier.height(12.dp))
+
+                    Text(
+                        "This guest profile is stored locally on this device. It does not create a cloud account.",
+                        color = Pale.copy(alpha = .65f),
+                        fontSize = 12.sp
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun FeatureCard(
+    title: String,
+    detail: String,
+    icon: androidx.compose.ui.graphics.vector.ImageVector
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 6.dp),
+        colors = CardDefaults.cardColors(containerColor = Panel),
+        shape = RoundedCornerShape(18.dp)
+    ) {
+        Row(
+            Modifier.padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                icon,
+                contentDescription = null,
+                tint = Cyan,
+                modifier = Modifier.size(28.dp)
+            )
+
+            Spacer(Modifier.width(14.dp))
+
+            Column {
+                Text(
+                    title,
+                    color = Pale,
+                    fontWeight = FontWeight.SemiBold
+                )
+
+                Spacer(Modifier.height(3.dp))
+
+                Text(
+                    detail,
+                    color = Pale.copy(alpha = .65f),
+                    fontSize = 12.sp
+                )
+            }
+        }
+    }
+}
